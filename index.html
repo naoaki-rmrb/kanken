@@ -838,7 +838,7 @@ function buildGoji(body, kq){
 }
 
 /* --- 手書き（筆順判定） --- */
-const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=1";
+const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=2";
 function charLoader(ch, onLoad, onErr){ fetch(strokeURL(ch)).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(onLoad).catch(onErr); }
 function buildWrite(body, ans, keepTools){
   const chars = [...ans];
@@ -1355,7 +1355,7 @@ $("who").onclick = ()=>{
 };
 
 /* 新しい版の確認：公開中のページの APP_VER とちがえば知らせる */
-const APP_VER = "20261012131455";
+const APP_VER = "20261012133220";
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{
