@@ -541,7 +541,7 @@ const catsOf = t => ["すべて"].concat(t==="book" ? SRCS : FIELDS);
 const inCat = (d, c) => c==="すべて" || d.f===c || d.src===c;
 const catList = c => DATA.filter(d=>inCat(d, c));
 // テキストの順（本のページ順）に出すか。テキストタブは本の順、分野べつは「未学習→まちがえた→正解」の順で同じ組の中は本の順
-const shortSrc = c => c.replace(/^ステージ1 /, "");
+const shortSrc = c => c.replace(/^ステージ(\d+) /, "S$1 ");
 
 /* ===== 記録（この端末）・ランキング ===== */
 const GAS_URL = "";  // Apps Script のウェブアプリのURL（漢検用。未設定なら端末の中だけに記録）
@@ -1326,7 +1326,7 @@ $("who").onclick = ()=>{
 };
 
 /* 新しい版の確認：公開中のページの APP_VER とちがえば知らせる */
-const APP_VER = "20261012015304";
+const APP_VER = "20261012130622";
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{
