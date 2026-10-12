@@ -409,6 +409,9 @@ h1{font-size:26px;margin:6px 0 12px}
 .kchoices button:disabled{opacity:.35}
 .kchoices button.ok{border-color:var(--ok);color:var(--ok);opacity:1}
 .kchoices button.ng{border-color:var(--red);color:var(--red);opacity:1}
+.kchoices.k4 button{font-family:"Klee One",serif;font-size:28px;text-align:center;letter-spacing:.06em}
+.kwhy{margin:6px 0 4px;padding-left:1.2em;font-size:14px;color:var(--ink-soft)}
+.kwhy b{font-family:"Klee One",serif;font-size:17px;color:var(--ink)}
 .ktools{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0}
 .fbok{color:var(--ok);font-weight:700;font-size:20px}
 .fbng{color:var(--red);font-weight:700;font-size:20px}
@@ -522,6 +525,7 @@ h1{font-size:26px;margin:6px 0 12px}
 
 <script src="lib/hanzi-writer.min.js"></script>
 <script src="data/questions.js"></script>
+<script src="data/choices4.js"></script>
 <script src="data/heritage.js"></script>
 <script src="data/worldmap.js"></script>
 <script>
@@ -532,13 +536,16 @@ function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 
 /* ===== 問題 ===== */
-const DATA = window.KQ || [];
-const FIELDS = ["読み","書き取り","送りがな","部首","熟語の構成","漢字識別","四字熟語","対義語・類義語","同音・同訓異字","誤字訂正"].filter(f=>DATA.some(d=>d.f===f));
+// 書き取りの4択版：data/choices4.js のひっかけ選択肢がある問題から作る（記録は手書きとは別）
+const KQ4 = window.KQ4 || {};
+const DATA = (window.KQ || []).flatMap(q=> KQ4[q.id] ? [q, {id:q.id + "-4", src:q.src, f:"書き取り（4択）", t:"pick4", q:q.q, a:q.a, r:q.r, d4:KQ4[q.id], base:q.id}] : [q]);
+const FIELDS = ["読み","書き取り","書き取り（4択）","送りがな","部首","熟語の構成","漢字識別","四字熟語","対義語・類義語","同音・同訓異字","誤字訂正"].filter(f=>DATA.some(d=>d.f===f));
 const SRCS = [...new Set(DATA.map(d=>d.src))];
 const qKey = q => "q:" + q.id;
 let tab = "field", cat = "すべて";
 const catsOf = t => ["すべて"].concat(t==="book" ? SRCS : FIELDS);
-const inCat = (d, c) => c==="すべて" || d.f===c || d.src===c;
+// テキストタブ（本のページ）では4択版は出さない（手書きの問題と重なるため）
+const inCat = (d, c) => c==="すべて" || d.f===c || (d.src===c && d.t!=="pick4");
 const catList = c => DATA.filter(d=>inCat(d, c));
 // テキストの順（本のページ順）に出すか。テキストタブは本の順、分野べつは「未学習→まちがえた→正解」の順で同じ組の中は本の順
 const shortSrc = c => c.replace(/^ステージ(\d+) /, "S$1 ");
@@ -749,6 +756,7 @@ function showQ(){
     okuri:"〔" + (cur.r || "") + "〕と読むように、［　］に入る送りがなをひらがなで書く",
     kaki: cur.ask || "カタカナを漢字に直して、下のわくに書く（1画ずつ、正しい書き順で）",
     choice: cur.ask || "答えをえらぶ",
+    pick4:"カタカナを漢字に直すと、正しいのはどれ？",
     goji:"まちがって使われている漢字（同じ読み）を1字さがしてタップ"
   }[cur.t];
   $("kask").textContent = ask;
@@ -756,6 +764,7 @@ function showQ(){
   if(cur.t==="yomi" || cur.t==="okuri") buildInput(body);
   else if(cur.t==="kaki") buildWrite(body, cur.a);
   else if(cur.t==="choice") buildChoice(body);
+  else if(cur.t==="pick4") buildPick4(body);
   else if(cur.t==="goji") buildGoji(body, kq);
   startTimer();
 }
@@ -787,6 +796,24 @@ function buildChoice(body){
     if(wrong.length <= 1 || hintN >= 2) return;
     shuffle(wrong)[0].disabled = true; hintN++; hinted = true;
     if(hintN >= 2 || wrong.length <= 2) $("khint").disabled = true; };
+}
+
+/* --- 書き取りの4択：同じ読み・似た形のひっかけから正しい漢字をえらぶ --- */
+function buildPick4(body){
+  body.innerHTML = '<div class="kchoices k4" id="kch"></div><div class="ktools"><button class="btn ghost small" id="khint" type="button">ヒント（まちがいを1つ消す）</button></div>';
+  let hintN = 0;
+  shuffle([cur.a].concat(cur.d4.map(x=>x[0]))).forEach(w=>{
+    const b = document.createElement("button"); b.type = "button"; b.textContent = w; b.dataset.k = w;
+    b.onclick = ()=>{ if(locked) return; const ok = w===cur.a; b.classList.add(ok ? "ok" : "ng");
+      [...$("kch").children].forEach(x=>{ if(x.dataset.k===cur.a) x.classList.add("ok"); x.disabled = true; });
+      answer(ok, w); };
+    $("kch").appendChild(b);
+  });
+  $("khint").onclick = ()=>{ if(locked) return;
+    const wrong = [...$("kch").children].filter(x=>x.dataset.k!==cur.a && !x.disabled);
+    if(wrong.length <= 1 || hintN >= 2) return;
+    shuffle(wrong)[0].disabled = true; hintN++; hinted = true;
+    if(hintN >= 2) $("khint").disabled = true; };
 }
 
 /* --- 誤字訂正：まちがった字をタップ → 正しい字を手書き --- */
@@ -868,14 +895,16 @@ function answer(ok, given, miss){
   const fb = $("feedback");
   const corr = cur.t==="kaki" ? cur.a + (cur.r ? "（" + cur.r + "）" : "")
     : cur.t==="goji" ? cur.w + " → " + cur.a
+    : cur.t==="pick4" ? cur.a + "（" + cur.r + "）"
     : cur.t==="choice" ? cur.ch.find(c=>c.split(" ")[0]===cur.a)
     : cur.t==="okuri" ? plainQ(cur.q).replace("　", cur.a) + "（" + cur.r + "）"
     : cur.a;
   fb.innerHTML = '<div class="' + (res==="まちがい" ? "fbng" : "fbok") + '">' + (res==="正解" ? "○ 正解！" : res==="ヒントで正解" ? "△ ヒントで正解（記録は×あつかい）" : "× ざんねん") + '</div>'
     + '<div>答え：<span class="kans">' + escHTML(corr) + '</span></div>'
     + (res==="まちがい" && (cur.t==="yomi" || cur.t==="okuri") && given ? '<div class="kread">あなたの答え：' + escHTML(given) + '</div>' : '')
-    + (cur.t==="kaki" && cur.q.includes("［") && !cur.box ? '<div class="kread">' + escHTML(plainQ(cur.q).replace(cur.r, cur.a)) + '</div>' : '')
+    + ((cur.t==="kaki" || cur.t==="pick4") && cur.q.includes("［") && !cur.box ? '<div class="kread">' + escHTML(plainQ(cur.q).replace(cur.r, cur.a)) + '</div>' : '')
     + (miss ? '<div class="kread">書き順・形でつまずいた画：' + miss + '</div>' : '')
+    + (cur.t==="pick4" ? '<ul class="kwhy">' + cur.d4.map(([w, why])=>'<li><b>' + escHTML(w) + '</b>：' + escHTML(why) + '</li>').join("") + '</ul>' : '')
     + '<div class="nextrow"><button class="btn" id="nextBtn" style="margin:0 0 0 auto">' + (qi + 1 < round.length ? "次の問題へ" : "結果を見る") + '</button></div>';
   $("nextBtn").onclick = ()=>{ qi++; if(qi < round.length) showQ(); else finish(); };
   const el = document.createElement("div"); el.className = "tagbar tagbottom"; fillTagBar(el, curKey()); fb.appendChild(el);
