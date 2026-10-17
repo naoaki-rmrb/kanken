@@ -865,7 +865,7 @@ function buildWrite(body, ans, keepTools){
   const startChar = ()=>{
     paintSlots(); curMiss = 0;
     $("wtarget").innerHTML = "";
-    $("wpad").classList.remove("done"); $("wfont").className = "wfont"; $("wfont").textContent = chars[idx];
+    $("wpad").classList.remove("done"); $("wfont").className = "wfont";  // 字はまだ入れない（前の字が消える間に次の字が見えないように）
     writer = HanziWriter.create("wtarget", chars[idx], {
       width:size, height:size, padding:Math.round(size*0.06), showCharacter:false, showOutline:false,
       strokeColor:"#1F2A44", drawingColor:"#1F2A44", drawingWidth:Math.max(14, Math.round(size/18)),
@@ -878,16 +878,16 @@ function buildWrite(body, ans, keepTools){
       onMistake:()=>{ miss++; curMiss++; $("wmsg").textContent = curMiss >= 3 ? "次に書く画が光ります" : "その画はちがうよ（書き順・向き・位置）";
         if(curMiss >= 3) hinted = true; },
       onCorrectStroke:s=>{ $("wmsg").textContent = (s.strokeNum + 1) + " / " + (s.strokeNum + 1 + s.strokesRemaining) + " 画"; },
-      onComplete:()=>{ $("wfont").className = "wfont show"; $("wpad").classList.add("done"); idx++;
+      onComplete:()=>{ $("wfont").textContent = chars[idx]; $("wfont").className = "wfont show"; $("wpad").classList.add("done"); idx++;
         if(idx < chars.length){ setTimeout(startChar, 450); }
         else{ paintSlots(); $("wmsg").textContent = "書けた！"; setTimeout(()=>answer(true, ans, miss), 300); } }
     });
   };
-  $("whint").onclick = ()=>{ if(locked || !writer) return; hinted = true; $("wfont").className = "wfont hint"; };
+  $("whint").onclick = ()=>{ if(locked || !writer) return; hinted = true; $("wfont").textContent = chars[idx]; $("wfont").className = "wfont hint"; };
   $("wredo").onclick = ()=>{ if(locked) return; try{ writer.cancelQuiz(); }catch(e){} startChar(); };
   $("wgive").onclick = ()=>{ if(locked) return;
     try{ writer.cancelQuiz(); }catch(e){}
-    $("wfont").className = "wfont show"; $("wpad").classList.add("done");
+    $("wfont").textContent = chars[Math.min(idx, chars.length-1)]; $("wfont").className = "wfont show"; $("wpad").classList.add("done");
     slots().forEach((sl,k)=>{ sl.textContent = chars[k]; sl.className = k < idx ? "done" : ""; });
     answer(false, chars.slice(0, idx).join("") + "（答えを見た）"); };
   startChar();
@@ -1365,7 +1365,7 @@ $("who").onclick = ()=>{
 };
 
 /* 新しい版の確認：公開中のページの APP_VER とちがえば知らせる */
-const APP_VER = "20261018002808";
+const APP_VER = "20261018003156";
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{
