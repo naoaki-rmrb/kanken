@@ -557,7 +557,7 @@ const catList = c => DATA.filter(d=>inCat(d, c));
 const shortSrc = c => c.replace(/^ステージ(\d+) /, "S$1 ");
 
 /* ===== 記録（この端末）・ランキング ===== */
-const GAS_URL = "";  // Apps Script のウェブアプリのURL（漢検用。未設定なら端末の中だけに記録）
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyMlS92QKCEzQpeTGVrrVGb0S44xU7QrwDcNTnbVvsh0v8_0yBdJfUmE3_om9gmLRrT/exec";  // Apps Script のウェブアプリのURL（漢検用。未設定なら端末の中だけに記録）
 const LS = { uid:"kk-uid", nick:"kk-nick", hist:"kk-history" };
 let UID = lsGet(LS.uid);
 if(!UID){
@@ -1365,7 +1365,7 @@ $("who").onclick = ()=>{
 };
 
 /* 新しい版の確認：公開中のページの APP_VER とちがえば知らせる */
-const APP_VER = "20261018003156";
+const APP_VER = "20261018003835";
 async function checkUpdate(){
   if(!/^https?:/.test(location.protocol)) return;
   try{
