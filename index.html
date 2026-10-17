@@ -480,7 +480,7 @@ h1{font-size:26px;margin:6px 0 12px}
       <ul class="qlist" id="qlist"></ul>
     </div>
   </div>
-  <p class="srcnote">問題の出典：日本漢字能力検定協会『漢検 ステージクリア 3級』。書き順のデータ：animCJK（LGPL）・Make Me a Hanzi（Arphic Public License）、手書きの判定：Hanzi Writer（MIT）。</p>
+  <p class="srcnote">問題の出典：日本漢字能力検定協会『漢検 ステージクリア 3級』。書き順のデータ：KanjiVG（© Ulrich Apel、CC BY-SA 3.0。太さを付けて加工）、手書きの判定：Hanzi Writer（MIT）。</p>
 </section>
 
 <section id="pickScreen" class="hidden">
@@ -838,7 +838,7 @@ function buildGoji(body, kq){
 }
 
 /* --- 手書き（筆順判定） --- */
-const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=2";
+const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=3";
 function charLoader(ch, onLoad, onErr){ fetch(strokeURL(ch)).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(onLoad).catch(onErr); }
 function buildWrite(body, ans, keepTools){
   const chars = [...ans];

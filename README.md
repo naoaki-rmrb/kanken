@@ -28,10 +28,11 @@
 | `data/questions.js` | 問題データ |
 | `data/choices4.js` | 書き取り（4択）のひっかけ選択肢と理由（`tools/choice_candidates.py` で候補を集めて選んだもの） |
 | `data/heritage.js`・`data/worldmap.js` | 世界遺産すごろく（英検トレーニングと同じ） |
-| `strokes/<コードポイント16進>.json` | 書き順データ（常用漢字2,136字＋ひらがな・カタカナ） |
+| `strokes/<コードポイント16進>.json` | 書き順データ（常用漢字2,136字＋ひらがな・カタカナ）。KanjiVG の中心線に太さを付けて作成 |
 | `lib/hanzi-writer.min.js` | 手書きの判定（Hanzi Writer 3.7.3） |
 | `gas/Code.gs` | ランキング用の Google Apps Script（漢検用。英検とは別のスプレッドシート） |
-| `tools/build_strokes.py` | animCJK から `strokes/` を作るスクリプト |
+| `tools/build_strokes_kvg.py` | KanjiVG から `strokes/` を作るスクリプト（今の版） |
+| `tools/build_strokes.py` | animCJK から `strokes/` を作るスクリプト（旧版。糸へんが点3つの書体のため差しかえ） |
 | `stamp.sh` | 公開前に `APP_VER` を刻む（新しい版の通知用） |
 
 ## ランキングのセットアップ（最初の1回だけ）
@@ -44,6 +45,6 @@
 
 ## ライセンス・出典
 
-- 書き順データ：[animCJK](https://github.com/parsimonhi/animCJK)（LGPL）。もとは [Make Me a Hanzi](https://github.com/skishore/makemeahanzi)（Arphic Public License）。`licenses/animCJK/` を参照。日本の字形・筆順のデータ（例：「右」はノから、「左」は横画から）。
+- 書き順データ：[KanjiVG](https://kanjivg.tagaini.net/)（© Ulrich Apel、CC BY-SA 3.0）。日本の字形・筆順のデータ（例：糸へんの下は「小」の形）。中心線に太さを付ける加工をしている（加工したデータも CC BY-SA 3.0）。旧版は animCJK（LGPL）。
 - 手書きの判定：[Hanzi Writer](https://github.com/chanind/hanzi-writer)（MIT）。`licenses/hanzi-writer/` を参照。
 - 漢検の採点基準では筆順は『筆順指導の手びき』（文部省、1958年）による。アプリの判定は animCJK のデータによるため、まれに異なる字がありうる。
