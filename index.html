@@ -844,7 +844,7 @@ function buildGoji(body, kq){
 }
 
 /* --- 手書き（筆順判定） --- */
-const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=4";
+const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=5";
 function charLoader(ch, onLoad, onErr){ fetch(strokeURL(ch)).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(onLoad).catch(onErr); }
 function buildWrite(body, ans, keepTools){
   const chars = [...ans];

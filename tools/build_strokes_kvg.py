@@ -93,7 +93,10 @@ for c in chars:
         kind, d = m.group(1) or "", m.group(2)
         pts = [tx(x, y) for x, y in parse(d)]
         strokes.append(outline(pts, kind))
-        medians.append([[round(x), round(y)] for x, y in resample(pts, 60)])
+        md = resample(pts, 60)
+        # 最後の点がすぐ手前の点に近すぎると、判定（向きの比較）が不安定になるので、手前の点を除く
+        if len(md) > 2 and math.dist(md[-1], md[-2]) < 30: del md[-2]
+        medians.append([[round(x), round(y)] for x, y in md])
     with open(os.path.join(out, "%x.json" % ord(c)), "w", encoding="utf-8") as fo:
         json.dump({"strokes": strokes, "medians": medians, "src": "KanjiVG"}, fo, ensure_ascii=False, separators=(",", ":"))
     n += 1
