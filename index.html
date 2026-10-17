@@ -6,7 +6,7 @@
 <title>漢検トレーニング</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Zen+Maru+Gothic:wght@500;700&family=Klee+One:wght@600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Zen+Maru+Gothic:wght@500;700&family=Klee+One:wght@600&family=Shippori+Mincho:wght@700&display=swap" rel="stylesheet">
 <style>
 /* 英検トレーニングと共通の見た目 */
 :root{
@@ -396,6 +396,12 @@ h1{font-size:26px;margin:6px 0 12px}
 .wpad svg.grid{position:absolute;inset:0;pointer-events:none}
 .wpad svg.grid line{stroke:var(--line);stroke-dasharray:6 6;stroke-width:1}
 .wpad .wtarget{position:relative}
+/* 書き終えた字・お手本・答えは、しっぽり明朝で表示する */
+.wfont{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:"Shippori Mincho",serif;font-weight:700;color:#1F2A44;pointer-events:none;line-height:1;opacity:0;transition:opacity .25s}
+.wfont.hint{opacity:.16}
+.wfont.show{opacity:1}
+.wpad.done svg:not(.grid){opacity:0;transition:opacity .25s}
+.kans,.wslots span{font-family:"Shippori Mincho","Klee One",serif !important;font-weight:700}
 .wmsg{min-height:1.4em;font-size:14px;color:var(--ink-soft);text-align:center}
 .kin{display:flex;gap:8px;margin:10px 0}
 .kin input{flex:1;font-size:22px;padding:10px 12px;border:2px solid var(--tile-edge);border-radius:10px;background:var(--tile);color:var(--ink);font-family:inherit;min-width:0}
@@ -838,7 +844,7 @@ function buildGoji(body, kq){
 }
 
 /* --- 手書き（筆順判定） --- */
-const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=3";
+const strokeURL = ch => "strokes/" + ch.codePointAt(0).toString(16) + ".json?v=4";
 function charLoader(ch, onLoad, onErr){ fetch(strokeURL(ch)).then(r=>{ if(!r.ok) throw new Error(r.status); return r.json(); }).then(onLoad).catch(onErr); }
 function buildWrite(body, ans, keepTools){
   const chars = [...ans];
@@ -848,7 +854,7 @@ function buildWrite(body, ans, keepTools){
   wrap.innerHTML += (chars.length > 1 ? '<div class="wslots" id="wslots">' + chars.map(()=>'<span></span>').join("") + '</div>' : '')
     + '<div class="wpad" id="wpad" style="width:' + size + 'px;height:' + size + 'px">'
     + '<svg class="grid" width="' + size + '" height="' + size + '"><line x1="0" y1="' + size/2 + '" x2="' + size + '" y2="' + size/2 + '"/><line x1="' + size/2 + '" y1="0" x2="' + size/2 + '" y2="' + size + '"/></svg>'
-    + '<div class="wtarget" id="wtarget"></div></div>'
+    + '<div class="wtarget" id="wtarget"></div><div class="wfont" id="wfont" style="font-size:' + Math.round(size*0.86) + 'px"></div></div>'
     + '<div class="wmsg" id="wmsg"></div>'
     + '<div class="ktools"><button class="btn ghost small" id="whint" type="button">ヒント（うすく字を出す）</button><button class="btn ghost small" id="wredo" type="button">この字を書き直す</button><button class="btn ghost small" id="wgive" type="button">答えを見る</button></div>';
   if(keepTools) body.innerHTML = ""; else body.innerHTML = "";
@@ -859,6 +865,7 @@ function buildWrite(body, ans, keepTools){
   const startChar = ()=>{
     paintSlots(); curMiss = 0;
     $("wtarget").innerHTML = "";
+    $("wpad").classList.remove("done"); $("wfont").className = "wfont"; $("wfont").textContent = chars[idx];
     writer = HanziWriter.create("wtarget", chars[idx], {
       width:size, height:size, padding:Math.round(size*0.06), showCharacter:false, showOutline:false,
       strokeColor:"#1F2A44", drawingColor:"#1F2A44", drawingWidth:Math.max(14, Math.round(size/18)),
@@ -871,15 +878,17 @@ function buildWrite(body, ans, keepTools){
       onMistake:()=>{ miss++; curMiss++; $("wmsg").textContent = curMiss >= 3 ? "次に書く画が光ります" : "その画はちがうよ（書き順・向き・位置）";
         if(curMiss >= 3) hinted = true; },
       onCorrectStroke:s=>{ $("wmsg").textContent = (s.strokeNum + 1) + " / " + (s.strokeNum + 1 + s.strokesRemaining) + " 画"; },
-      onComplete:()=>{ idx++;
+      onComplete:()=>{ $("wfont").className = "wfont show"; $("wpad").classList.add("done"); idx++;
         if(idx < chars.length){ setTimeout(startChar, 450); }
         else{ paintSlots(); $("wmsg").textContent = "書けた！"; setTimeout(()=>answer(true, ans, miss), 300); } }
     });
   };
-  $("whint").onclick = ()=>{ if(locked || !writer) return; hinted = true; writer.showOutline(); };
+  $("whint").onclick = ()=>{ if(locked || !writer) return; hinted = true; $("wfont").className = "wfont hint"; };
   $("wredo").onclick = ()=>{ if(locked) return; try{ writer.cancelQuiz(); }catch(e){} startChar(); };
   $("wgive").onclick = ()=>{ if(locked) return;
-    try{ writer.cancelQuiz(); writer.showCharacter(); writer.animateCharacter(); }catch(e){}
+    try{ writer.cancelQuiz(); }catch(e){}
+    $("wfont").className = "wfont show"; $("wpad").classList.add("done");
+    slots().forEach((sl,k)=>{ sl.textContent = chars[k]; sl.className = k < idx ? "done" : ""; });
     answer(false, chars.slice(0, idx).join("") + "（答えを見た）"); };
   startChar();
 }

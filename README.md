@@ -45,6 +45,6 @@
 
 ## ライセンス・出典
 
-- 書き順データ：[KanjiVG](https://kanjivg.tagaini.net/)（© Ulrich Apel、CC BY-SA 3.0）。日本の字形・筆順のデータ（例：糸へんの下は「小」の形）。中心線に太さを付ける加工をしている（加工したデータも CC BY-SA 3.0）。旧版は animCJK（LGPL）。
+- 書き順データ：[KanjiVG](https://kanjivg.tagaini.net/)（© Ulrich Apel、CC BY-SA 3.0）。日本の字形・筆順のデータ（例：糸へんの下は「小」の形）。中心線に太さを付ける加工をしている（縦画を太く横画を細めにした明朝に近い形。加工したデータも CC BY-SA 3.0）。書き終えた字・答えはフォント「しっぽり明朝」（SIL Open Font License）で表示。旧版は animCJK（LGPL）。
 - 手書きの判定：[Hanzi Writer](https://github.com/chanind/hanzi-writer)（MIT）。`licenses/hanzi-writer/` を参照。
 - 漢検の採点基準では筆順は『筆順指導の手びき』（文部省、1958年）による。アプリの判定は animCJK のデータによるため、まれに異なる字がありうる。

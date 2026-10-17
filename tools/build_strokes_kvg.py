@@ -1,6 +1,6 @@
 """KanjiVG（日本の教科書体に近い字形・筆順）から、Hanzi Writer 用の書き順データを作る。
 KanjiVG は画の中心線（ペンの通り道）だけを持つので、中心線に太さを付けて画の形（輪郭）を作る。
-はらい（㇒㇏など）は終わりを細く、とめ・はねは同じ太さで描く。
+縦画は太く横画は細め（明朝に近い形）、はらい（㇒㇏など）は終わりを細く描く。
 使い方：python3 tools/build_strokes_kvg.py <kanjivg の kanji フォルダ> <文字の一覧ファイル（1行に1字でも、つなげても可）>
 出力：strokes/<コードポイント16進>.json（strokes＝輪郭、medians＝中心線の点）"""
 import json, math, os, re, sys
@@ -11,7 +11,7 @@ chars = [c for c in open(listfile, encoding="utf-8").read() if not c.isspace()]
 
 S = 1024 / 109                      # KanjiVG の 109×109 を Hanzi Writer の 1024 に
 tx = lambda x, y: (x * S, 900 - y * S)   # Hanzi Writer は y が上向き（900 が上端）
-W = 7.2 * S / 2                     # 画の太さの半分（教科書体に近い太さ）
+W = 8.2 * S / 2                     # 画の太さの半分（縦画の太さ）
 TAPER = set("㇒㇏㇀㇓㇇㇋㇢")         # 終わりを細くする画（はらい・はね上げ）
 
 def bez(p0, p1, p2, p3, n=14):
@@ -71,8 +71,9 @@ def outline(pts, kind):
         dx, dy = b[0]-a[0], b[1]-a[1]; m = math.hypot(dx, dy) or 1
         nx, ny = -dy/m, dx/m
         t = k / (n-1)
-        w = W * (0.92 + 0.08*math.sin(math.pi*t))
-        if taper and t > 0.55: w *= max(0.2, 1 - (t-0.55)/0.45*0.8)
+        # 明朝に近い形：縦画は太く、横画は細め。はらいは終わりを細く
+        w = W * (0.45 + 0.7*abs(dy/m))
+        if taper and t > 0.45: w *= max(0.15, 1 - (t-0.45)/0.55*0.85)
         L.append((p[0]+nx*w, p[1]+ny*w)); R.append((p[0]-nx*w, p[1]-ny*w))
     def cap(c, d, w):     # 半円で端を丸める
         ang = math.atan2(d[1], d[0])
